@@ -7,6 +7,7 @@ import type { Schema } from "../amplify/data/resource";
 import { generateClient } from "aws-amplify/data";
 import outputs from "../amplify_outputs.json";
 import logoImage from "./assets/pics/logo.png";
+import { signOut } from "aws-amplify/auth";
 
 import "@aws-amplify/ui-react/styles.css";
 
@@ -61,8 +62,23 @@ function App() {
     setInputValue(e.target.value);
   };
 
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      // The Authenticator will handle the UI change automatically
+    } catch (error) {
+      console.error('Error signing out: ', error);
+    }
+  };
+
   return (
     <div className="app-container">
+      <div className="nav-container">
+        <button className="logout-button" onClick={handleLogout}>
+          Log Out
+        </button>
+      </div>
+      
       <div className={`header-container ${animateIntro ? 'fade-in' : ''}`}>
         <img src={logoImage} alt="Recipe AI Logo" className="logo" />
         <h1 className="main-header">
@@ -116,6 +132,10 @@ function App() {
           )}
         </div>
       )}
+      
+      <footer className="footer">
+        © {new Date().getFullYear()} Aiden Dinh & Arthur Nguyen
+      </footer>
     </div>
   );
 }
