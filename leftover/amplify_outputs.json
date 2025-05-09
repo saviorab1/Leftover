@@ -74,6 +74,29 @@
               "type": "String",
               "isRequired": false,
               "isArrayNullable": true
+            },
+            "useFallback": {
+              "name": "useFallback",
+              "isArray": false,
+              "type": "Boolean",
+              "isRequired": false
+            }
+          }
+        },
+        "askBedrockFallback": {
+          "name": "askBedrockFallback",
+          "isArray": false,
+          "type": {
+            "nonModel": "BedrockResponse"
+          },
+          "isRequired": false,
+          "arguments": {
+            "ingredients": {
+              "name": "ingredients",
+              "isArray": true,
+              "type": "String",
+              "isRequired": false,
+              "isArrayNullable": true
             }
           }
         }

@@ -1,8 +1,14 @@
 export function request(ctx) {
-    const { ingredients = [] } = ctx.args;
+    const { ingredients = [], useFallback } = ctx.args;
   
     // Construct the prompt with the provided ingredients
     const prompt = `Suggest a recipe idea using these ingredients (Please provide a recipe with the language used in the input ingredients. Provide 2 to 3 different recipes if possible): ${ingredients.join(", ")}.`;
+  
+    // Determine which endpoint to use based on the useFallback parameter
+    // If useFallback is undefined or false, use the primary endpoint
+    const endpoint = useFallback === true
+      ? "bedrockFallbackDS" // Use fallback in ap-northeast-1
+      : "bedrockDS";        // Use primary in ap-southeast-1
   
     // Return the request configuration
     return {
@@ -15,6 +21,7 @@ export function request(ctx) {
         body: JSON.stringify({
           anthropic_version: "bedrock-2023-05-31",
           max_tokens: 1000,
+          temperature: 0.7,
           messages: [
             {
               role: "user",

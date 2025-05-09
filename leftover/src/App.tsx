@@ -22,11 +22,39 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [animateIntro, setAnimateIntro] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [usingFallback, setUsingFallback] = useState(false);
 
   useEffect(() => {
     // Trigger animation after component mounts
     setAnimateIntro(true);
   }, []);
+
+  const callBedrockAPI = async (ingredients: string[], useFallback = false) => {
+    // Create a promise that will reject after 30 seconds
+    const timeout = new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error('Request timed out')), 30000);
+    });
+    
+    try {
+      const response = await Promise.race([
+        useFallback 
+          ? amplifyClient.queries.askBedrockFallback({ ingredients })
+          : amplifyClient.queries.askBedrock({ ingredients }),
+        timeout
+      ]);
+      
+      // If we get here, API request completed before timeout
+      if (!response.data) {
+        throw new Error("No data returned from the API");
+      }
+      
+      return response.data.body;
+    } catch (error) {
+      // Re-throw the error to handle it in the calling function
+      throw error;
+    }
+  };
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -34,6 +62,8 @@ function App() {
     
     setLoading(true);
     setResult("");
+    setError(null);
+    setUsingFallback(false);
 
     try {
       const ingredientsInput = inputValue.trim();
@@ -42,17 +72,35 @@ function App() {
         .map(ingredient => ingredient.trim())
         .filter(ingredient => ingredient.length > 0);
       
-      const { data, errors } = await amplifyClient.queries.askBedrock({
-        ingredients: ingredientsArray,
-      });
-
-      if (!errors) {
-        setResult(data?.body || "No data returned");
-      } else {
-        console.log(errors);
+      try {
+        // First try the primary region (ap-southeast-1)
+        const resultText = await callBedrockAPI(ingredientsArray, false);
+        setResult(resultText || "No recipe content returned");
+      } catch (primaryError) {
+        console.warn("Primary region failed, trying fallback:", primaryError);
+        setUsingFallback(true);
+        
+        try {
+          // If primary region fails, try the fallback region (ap-northeast-1)
+          const fallbackResult = await callBedrockAPI(ingredientsArray, true);
+          setResult(fallbackResult || "No recipe content returned");
+        } catch (fallbackError) {
+          // Both regions failed
+          console.error("Both regions failed:", fallbackError);
+          if (fallbackError instanceof Error) {
+            setError(`Service unavailable: ${fallbackError.message}`);
+          } else {
+            setError("Service is unavailable in all regions. Please try again later.");
+          }
+        }
       }
     } catch (e) {
-      alert(`An error occurred: ${e}`);
+      console.error("Exception:", e);
+      if (e instanceof Error) {
+        setError(`An error occurred: ${e.message}`);
+      } else {
+        setError("An unknown error occurred. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -117,8 +165,8 @@ function App() {
         </div>
       </form>
       
-      {(loading || result) && (
-        <div className={`result-container ${result || loading ? 'appear' : ''}`}>
+      {(loading || result || error) && (
+        <div className={`result-container ${result || loading || error ? 'appear' : ''}`}>
           {loading ? (
             <div className="loader-container">
               <p>Creating your personalized recipe...</p>
@@ -127,8 +175,15 @@ function App() {
               <Placeholder size="large" />
               <Placeholder size="large" />
             </div>
+          ) : error ? (
+            <p className="result error-message">{error}</p>
           ) : (
-            result && <p className="result">{result}</p>
+            <>
+              {usingFallback && (
+                <p className="fallback-notice">Using fallback region (ap-northeast-1)</p>
+              )}
+              <p className="result">{result}</p>
+            </>
           )}
         </div>
       )}

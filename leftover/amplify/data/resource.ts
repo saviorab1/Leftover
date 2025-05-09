@@ -8,11 +8,25 @@ const schema = a.schema({
 
   askBedrock: a
     .query()
-    .arguments({ ingredients: a.string().array() })
+    .arguments({ 
+      ingredients: a.string().array(),
+      useFallback: a.boolean()
+    })
     .returns(a.ref("BedrockResponse"))
     .authorization((allow) => [allow.authenticated()])
     .handler(
       a.handler.custom({ entry: "./bedrock.js", dataSource: "bedrockDS" })
+    ),
+    
+  askBedrockFallback: a
+    .query()
+    .arguments({ 
+      ingredients: a.string().array() 
+    })
+    .returns(a.ref("BedrockResponse"))
+    .authorization((allow) => [allow.authenticated()])
+    .handler(
+      a.handler.custom({ entry: "./bedrock.js", dataSource: "bedrockFallbackDS" })
     ),
 });
 
@@ -26,4 +40,4 @@ export const data = defineData({
       expiresInDays: 30,
     },
   },
-});
+}); 

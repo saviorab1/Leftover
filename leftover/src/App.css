@@ -295,6 +295,12 @@ body {
   line-height: 1.6;
 }
 
+.error-message {
+  background: linear-gradient(to bottom, #fff0f0 0%, #ffe0e0 100%);
+  color: #d32f2f;
+  border-left: 4px solid #d32f2f;
+}
+
 /* Responsive Adjustments */
 @media (min-width: 768px) {
   .main-header {
