@@ -8,7 +8,7 @@ const backend = defineBackend({
   data,
 });
 
-// Primary region (ap-southeast-1)
+// Primary region
 const bedrockDataSource = backend.data.resources.graphqlApi.addHttpDataSource(
   "bedrockDS",
   "https://bedrock-runtime.ap-southeast-1.amazonaws.com",
@@ -20,7 +20,7 @@ const bedrockDataSource = backend.data.resources.graphqlApi.addHttpDataSource(
   }
 );
 
-// Fallback region (ap-northeast-1)
+// Fallback region
 const bedrockFallbackDataSource = backend.data.resources.graphqlApi.addHttpDataSource(
   "bedrockFallbackDS",
   "https://bedrock-runtime.ap-northeast-1.amazonaws.com",

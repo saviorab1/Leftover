@@ -7,8 +7,8 @@ export function request(ctx) {
     // Determine which endpoint to use based on the useFallback parameter
     // If useFallback is undefined or false, use the primary endpoint
     const endpoint = useFallback === true
-      ? "bedrockFallbackDS" // Use fallback in ap-northeast-1
-      : "bedrockDS";        // Use primary in ap-southeast-1
+      ? "bedrockFallbackDS" // Use fallback
+      : "bedrockDS";        // Use primary
   
     // Return the request configuration
     return {
@@ -21,7 +21,7 @@ export function request(ctx) {
         body: JSON.stringify({
           anthropic_version: "bedrock-2023-05-31",
           max_tokens: 1000,
-          temperature: 0.7,
+          temperature: 0.4,
           messages: [
             {
               role: "user",
