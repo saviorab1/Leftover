@@ -7,7 +7,7 @@ import type { Schema } from "../amplify/data/resource";
 import { generateClient } from "aws-amplify/data";
 import outputs from "../amplify_outputs.json";
 import logoImage from "./assets/pics/logo.png";
-import { signOut } from "aws-amplify/auth";
+import { signOut, getCurrentUser } from "aws-amplify/auth";
 
 import "@aws-amplify/ui-react/styles.css";
 
@@ -56,6 +56,32 @@ function App() {
     }
   };
 
+  const collectUserData = async (ingredients: string) => {
+    try {
+      const user = await getCurrentUser();
+      const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      
+      const dataPayload = {
+        ingredients,
+        timestamp: new Date().toISOString(),
+        userId: user.userId || 'anonymous',
+        sessionId
+      };
+
+      // Input API Gateway URL here
+      await fetch('https://90ov9352pd.execute-api.ap-southeast-1.amazonaws.com/prod//collect-data', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(dataPayload)
+      });
+    } catch (error) {
+      // Silently fail - don't disrupt user experience
+      console.log('Data collection failed:', error);
+    }
+  };
+
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!inputValue.trim()) return;
@@ -67,6 +93,10 @@ function App() {
 
     try {
       const ingredientsInput = inputValue.trim();
+      
+      // Collect user data (fire and forget)
+      collectUserData(ingredientsInput);
+      
       const ingredientsArray = ingredientsInput
         .split(",")
         .map(ingredient => ingredient.trim())
