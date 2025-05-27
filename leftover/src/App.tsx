@@ -69,7 +69,7 @@ function App() {
       };
 
       // Input API Gateway URL here
-      await fetch('https://90ov9352pd.execute-api.ap-southeast-1.amazonaws.com/prod//collect-data', {
+      await fetch('https://90ov9352pd.execute-api.ap-southeast-1.amazonaws.com/prod/collect-data', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
